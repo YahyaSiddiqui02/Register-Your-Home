@@ -7,7 +7,27 @@ import errorHandler from './middleware/errorHandler.js'
 
 const app = express()
 
-app.use(cors())
+// CORS configuration for production and development
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
+const allowedOrigins = [
+  'http://localhost:5173', // Local development
+  ...frontendUrl.split(',').map(url => url.trim()), // Production origins from env
+]
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests without origin (e.g., curl, mobile apps, same-origin requests)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true)
+      } else {
+        callback(new Error('CORS not allowed'))
+      }
+    },
+    credentials: true,
+  })
+)
+
 app.use(express.json())
 
 app.use('/api/health', healthRoutes)

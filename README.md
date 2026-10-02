@@ -70,12 +70,12 @@ register-your-home/
 3. **Set up environment:**
    ```bash
    cp .env.example .env
-   # Then edit .env with your PostgreSQL credentials
+   # Edit .env with your PostgreSQL credentials (local development uses localhost:5432)
    ```
 
 4. **Set up database:**
    ```bash
-   npx prisma migrate dev --name init
+   npx prisma migrate dev
    npx prisma db seed
    ```
 
@@ -84,6 +84,12 @@ register-your-home/
    npm run dev
    ```
    The API will run on `http://localhost:5000`
+
+**For production deployment (e.g., on Render):**
+- Set environment variables: `DATABASE_URL`, `JWT_SECRET`, `FRONTEND_URL`, `PORT`
+- Run `npm run build` (generates Prisma client and applies migrations)
+- Run `npm start` (starts production server)
+- The server listens on `0.0.0.0` for hosting services
 
 ### Frontend Setup
 
@@ -133,6 +139,7 @@ PORT=5000
 DATABASE_URL=postgresql://user:password@localhost:5432/register_your_home
 JWT_SECRET=your-secret-key
 JWT_EXPIRES_IN=7d
+FRONTEND_URL=http://localhost:5173
 ```
 
 ### Frontend (.env.local)
