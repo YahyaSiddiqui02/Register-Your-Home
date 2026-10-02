@@ -1,0 +1,88 @@
+const properties = [
+  {
+    id: 1,
+    title: 'Sunset Heights Apartment',
+    type: 'Flat',
+    listingType: 'Rent',
+    price: 28000,
+    bhk: 2,
+    area: 980,
+    city: 'Bengaluru',
+    location: 'Koramangala',
+    furnished: true,
+    image:
+      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    id: 2,
+    title: 'Green Valley Villa',
+    type: 'House',
+    listingType: 'Sale',
+    price: 18500000,
+    bhk: 4,
+    area: 2100,
+    city: 'Pune',
+    location: 'Kharadi',
+    furnished: true,
+    image:
+      'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    id: 3,
+    title: 'Civic Center Plot',
+    type: 'Plot',
+    listingType: 'Sale',
+    price: 9200000,
+    bhk: 0,
+    area: 1800,
+    city: 'Hyderabad',
+    location: 'Gachibowli',
+    furnished: false,
+    image:
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    id: 4,
+    title: 'Metro Nest PG',
+    type: 'PG',
+    listingType: 'Rent',
+    price: 12000,
+    bhk: 0,
+    area: 320,
+    city: 'Delhi',
+    location: 'Dwarka',
+    furnished: true,
+    image:
+      'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    id: 5,
+    title: 'Market Square Shop',
+    type: 'Shop',
+    listingType: 'Sale',
+    price: 4200000,
+    bhk: 0,
+    area: 640,
+    city: 'Jaipur',
+    location: 'Malviya Nagar',
+    furnished: false,
+    image:
+      'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    id: 6,
+    title: 'Lakeview Residency',
+    type: 'Flat',
+    listingType: 'Sale',
+    price: 6500000,
+    bhk: 3,
+    area: 1450,
+    city: 'Mumbai',
+    location: 'Andheri East',
+    furnished: true,
+    image:
+      'https://images.unsplash.com/photo-1460317442991-0ec209397118?auto=format&fit=crop&w=1200&q=80',
+  },
+]
+
+export default properties
