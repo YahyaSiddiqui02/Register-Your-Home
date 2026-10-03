@@ -1,89 +1,59 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { formatPrice } from '../utils/formatPrice'
 
-function formatPrice(listingType, price) {
-  if (listingType === 'Rent') {
-    return `₹${Number(price).toLocaleString('en-IN')}/month`
-  }
-
-  if (price >= 10000000) {
-    return `₹${(price / 10000000).toFixed(2)} Cr`
-  }
-
-  if (price >= 100000) {
-    return `₹${(price / 100000).toFixed(2)} L`
-  }
-
-  return `₹${Number(price).toLocaleString('en-IN')}`
-}
+const FALLBACK = 'https://picsum.photos/seed/ryh-fallback/600/400'
 
 export default function PropertyCard({ property }) {
   const [liked, setLiked] = useState(false)
-
-  const badgeClasses =
-    property.listingType === 'Rent'
-      ? 'bg-emerald-500 text-white'
-      : 'bg-orange-500 text-white'
+  const p = property
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:shadow-xl">
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition overflow-hidden flex flex-col">
       <div className="relative">
         <img
-          src={property.image}
-          alt={property.title}
-          className="h-56 w-full object-cover"
+          src={p.image || FALLBACK}
+          alt={p.title}
+          loading="lazy"
+          onError={(e) => {
+            e.currentTarget.src = FALLBACK
+          }}
+          className="h-48 w-full object-cover"
         />
-
         <span
-          className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-xs font-semibold ${badgeClasses}`}
+          className={`absolute top-3 left-3 rounded-full px-3 py-1 text-xs font-semibold text-white ${
+            p.listingType === 'Rent' ? 'bg-green-600' : 'bg-orange-500'
+          }`}
         >
-          {property.listingType}
+          {p.listingType}
         </span>
-
         <button
           type="button"
-          aria-label="Toggle favorite"
-          onClick={() => setLiked((prev) => !prev)}
-          className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-lg shadow-sm transition hover:bg-white"
+          onClick={() => setLiked(!liked)}
+          aria-label="Favorite"
+          className="absolute top-3 right-3 h-9 w-9 rounded-full bg-white/90 text-xl shadow flex items-center justify-center"
         >
-          {liked ? '♥' : '♡'}
+          <span className={liked ? 'text-red-500' : 'text-gray-400'}>{liked ? '♥' : '♡'}</span>
         </button>
       </div>
-
-      <div className="space-y-4 p-4">
-        <div>
-          <h3 className="text-lg font-bold text-slate-800">{property.title}</h3>
-          <p className="mt-1 text-sm text-slate-500">
-            {property.location}, {property.city}
-          </p>
+      <div className="p-4 flex flex-col flex-1">
+        <h3 className="font-bold text-lg leading-snug">{p.title}</h3>
+        <p className="text-sm text-gray-500 mt-1">
+          {p.location}, {p.city}
+        </p>
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-700 mt-3">
+          {p.bhk > 0 && <span>{p.bhk} BHK</span>}
+          <span>{p.area} sq ft</span>
+          <span>{p.furnished}</span>
         </div>
-
-        <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
-          {property.bhk > 0 && (
-            <span className="rounded-full bg-slate-100 px-2 py-1">
-              {property.bhk} BHK
-            </span>
-          )}
-          <span className="rounded-full bg-slate-100 px-2 py-1">
-            {property.area} sq ft
-          </span>
-          <span className="rounded-full bg-slate-100 px-2 py-1">
-            {property.furnished ? 'Furnished' : 'Unfurnished'}
-          </span>
-        </div>
-
-        <div className="flex items-center justify-between gap-3 pt-1">
-          <div className="text-xl font-bold text-blue-600">
-            {formatPrice(property.listingType, property.price)}
-          </div>
-
-          <button
-            type="button"
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
-          >
-            View Details
-          </button>
-        </div>
+        <p className="text-xl font-bold text-blue-600 mt-4">{formatPrice(p.price, p.listingType)}</p>
+        <Link
+          to={`/property/${p.id}`}
+          className="mt-4 block rounded-lg bg-blue-600 py-2 text-center font-medium text-white hover:bg-blue-700"
+        >
+          View Details
+        </Link>
       </div>
-    </article>
+    </div>
   )
 }

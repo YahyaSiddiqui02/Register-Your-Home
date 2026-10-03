@@ -1,218 +1,91 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import Field from '../components/Field'
+import { inputCls } from '../utils/ui'
+import { signupUser } from '../services/api'
+import { useAuth } from '../context/AuthContext'
 
-const initialForm = {
-  fullName: '',
-  email: '',
-  phone: '',
-  role: 'Buyer/Tenant',
-  password: '',
-  confirmPassword: '',
-}
-
-const initialErrors = {}
+const empty = { name: '', email: '', phone: '', role: 'BUYER_TENANT', password: '', confirm: '' }
 
 export default function Signup() {
-  const [form, setForm] = useState(initialForm)
-  const [errors, setErrors] = useState(initialErrors)
-  const [successMessage, setSuccessMessage] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const navigate = useNavigate()
+  const { saveSession } = useAuth()
+  const [form, setForm] = useState(empty)
+  const [errors, setErrors] = useState({})
+  const [serverError, setServerError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleChange = (event) => {
-    const { name, value } = event.target
-    setForm((prev) => ({ ...prev, [name]: value }))
-    setErrors((prev) => ({ ...prev, [name]: '' }))
-  }
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
 
-  const validateForm = () => {
-    const nextErrors = {}
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-    if (!form.fullName.trim()) {
-      nextErrors.fullName = 'Name is required'
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    const errs = {}
+    if (!form.name.trim()) errs.name = 'Name is required'
+    if (!/^\S+@\S+\.\S+$/.test(form.email)) errs.email = 'Enter a valid email'
+    if (!/^\d{10}$/.test(form.phone)) errs.phone = 'Phone must be exactly 10 digits'
+    if (form.password.length < 6) errs.password = 'Password must be at least 6 characters'
+    if (form.confirm !== form.password) errs.confirm = 'Passwords do not match'
+    setErrors(errs)
+    setServerError('')
+    if (Object.keys(errs).length) return
+    setLoading(true)
+    try {
+      const res = await signupUser({
+        name: form.name.trim(),
+        fullName: form.name.trim(),
+        email: form.email.trim(),
+        phone: form.phone,
+        role: form.role,
+        password: form.password,
+      })
+      saveSession(res.token, res.user)
+      navigate('/')
+    } catch (err) {
+      setServerError(err.message)
+    } finally {
+      setLoading(false)
     }
-
-    if (!emailPattern.test(form.email.trim())) {
-      nextErrors.email = 'Please enter a valid email'
-    }
-
-    if (!/^\d{10}$/.test(form.phone.trim())) {
-      nextErrors.phone = 'Phone must be 10 digits'
-    }
-
-    if (!form.password || form.password.length < 6) {
-      nextErrors.password = 'Password must be at least 6 characters'
-    }
-
-    if (!form.confirmPassword) {
-      nextErrors.confirmPassword = 'Please confirm your password'
-    } else if (form.password !== form.confirmPassword) {
-      nextErrors.confirmPassword = 'Passwords do not match'
-    }
-
-    return nextErrors
-  }
-
-  const handleSubmit = (event) => {
-    event.preventDefault()
-
-    const nextErrors = validateForm()
-    setErrors(nextErrors)
-
-    if (Object.keys(nextErrors).length > 0) {
-      setSuccessMessage('')
-      return
-    }
-
-    console.log('Signup data:', form)
-    setSuccessMessage('Account created (demo)')
-    setForm(initialForm)
-    setErrors(initialErrors)
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-72px)] items-center justify-center px-4 py-10 sm:px-6">
-      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-        <div className="mb-6 text-center">
-          <h1 className="text-3xl font-bold text-slate-900">Create your account</h1>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label htmlFor="fullName" className="mb-1 block text-sm font-medium text-slate-700">
-              Full name
-            </label>
-            <input
-              id="fullName"
-              name="fullName"
-              type="text"
-              value={form.fullName}
-              onChange={handleChange}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white"
-              placeholder="Your full name"
-            />
-            {errors.fullName && <p className="mt-1 text-xs text-red-500">{errors.fullName}</p>}
-          </div>
-
-          <div>
-            <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-700">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white"
-              placeholder="you@example.com"
-            />
-            {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
-          </div>
-
-          <div>
-            <label htmlFor="phone" className="mb-1 block text-sm font-medium text-slate-700">
-              Phone
-            </label>
-            <input
-              id="phone"
-              name="phone"
-              type="tel"
-              value={form.phone}
-              onChange={handleChange}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white"
-              placeholder="10-digit phone number"
-            />
-            {errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone}</p>}
-          </div>
-
-          <div>
-            <label htmlFor="role" className="mb-1 block text-sm font-medium text-slate-700">
-              Role
-            </label>
-            <select
-              id="role"
-              name="role"
-              value={form.role}
-              onChange={handleChange}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white"
-            >
-              <option value="Buyer/Tenant">Buyer/Tenant</option>
-              <option value="Owner">Owner</option>
-              <option value="Liaison">Liaison</option>
+    <div className="max-w-md mx-auto px-4 py-12">
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
+        <h1 className="text-2xl font-bold mb-6">Create your account</h1>
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          <Field label="Full name" error={errors.name}>
+            <input name="name" className={inputCls} value={form.name} onChange={handleChange} />
+          </Field>
+          <Field label="Email" error={errors.email}>
+            <input name="email" type="email" className={inputCls} value={form.email} onChange={handleChange} />
+          </Field>
+          <Field label="Phone (10 digits)" error={errors.phone}>
+            <input name="phone" className={inputCls} value={form.phone} onChange={handleChange} />
+          </Field>
+          <Field label="I am a">
+            <select name="role" className={inputCls} value={form.role} onChange={handleChange}>
+              <option value="BUYER_TENANT">Buyer / Tenant</option>
+              <option value="OWNER">Owner</option>
+              <option value="LIAISON">Liaison</option>
             </select>
-          </div>
-
-          <div>
-            <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-700">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? 'text' : 'password'}
-                value={form.password}
-                onChange={handleChange}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 pr-10 text-sm text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white"
-                placeholder="Create a password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute inset-y-0 right-3 flex items-center text-xs font-medium text-slate-500 hover:text-slate-700"
-              >
-                {showPassword ? 'Hide' : 'Show'}
-              </button>
-            </div>
-            {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password}</p>}
-          </div>
-
-          <div>
-            <label htmlFor="confirmPassword" className="mb-1 block text-sm font-medium text-slate-700">
-              Confirm password
-            </label>
-            <div className="relative">
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type={showConfirmPassword ? 'text' : 'password'}
-                value={form.confirmPassword}
-                onChange={handleChange}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 pr-10 text-sm text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white"
-                placeholder="Confirm your password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword((prev) => !prev)}
-                className="absolute inset-y-0 right-3 flex items-center text-xs font-medium text-slate-500 hover:text-slate-700"
-              >
-                {showConfirmPassword ? 'Hide' : 'Show'}
-              </button>
-            </div>
-            {errors.confirmPassword && (
-              <p className="mt-1 text-xs text-red-500">{errors.confirmPassword}</p>
-            )}
-          </div>
-
-          {successMessage && (
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
-              {successMessage}
-            </div>
-          )}
-
+          </Field>
+          <Field label="Password" error={errors.password}>
+            <input name="password" type="password" className={inputCls} value={form.password} onChange={handleChange} />
+          </Field>
+          <Field label="Confirm password" error={errors.confirm}>
+            <input name="confirm" type="password" className={inputCls} value={form.confirm} onChange={handleChange} />
+          </Field>
+          {serverError && <p className="text-sm text-red-600">{serverError}</p>}
           <button
             type="submit"
-            className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+            disabled={loading}
+            className="w-full rounded-lg bg-blue-600 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-60"
           >
-            Sign Up
+            {loading ? 'Creating account...' : 'Sign Up'}
           </button>
         </form>
-
-        <p className="mt-5 text-center text-sm text-slate-600">
+        <p className="text-sm text-gray-600 mt-6 text-center">
           Already have an account?{' '}
-          <Link to="/login" className="font-semibold text-blue-600 hover:text-blue-700">
+          <Link to="/login" className="text-blue-600 hover:underline">
             Login
           </Link>
         </p>
